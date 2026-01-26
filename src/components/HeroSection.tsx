@@ -102,10 +102,8 @@ const GrowthVisual: React.FC = () => {
             r="3"
             fill="currentColor"
             className="text-secondary"
-            style={{
-              cx: 150 + Math.random() * 100,
-              cy: 150 + Math.random() * 100
-            }}
+            cx={150 + Math.random() * 100}
+            cy={150 + Math.random() * 100}
             animate={{ y: [0, -20, 0], opacity: [0, 1, 0] }}
             transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
           />
