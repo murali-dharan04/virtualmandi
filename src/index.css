@@ -1,0 +1,257 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@layer utilities {
+  @keyframes cloud-move {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100vw);
+    }
+  }
+
+  @keyframes sway {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    50% {
+      transform: rotate(5deg);
+    }
+
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  @keyframes fly {
+    0% {
+      transform: translateX(0) translateY(0);
+    }
+
+    25% {
+      transform: translateX(25vw) translateY(-20px);
+    }
+
+    50% {
+      transform: translateX(50vw) translateY(0);
+    }
+
+    75% {
+      transform: translateX(75vw) translateY(20px);
+    }
+
+    100% {
+      transform: translateX(120vw) translateY(0);
+    }
+  }
+
+  .animate-cloud-slow {
+    animation: cloud-move 60s linear infinite;
+  }
+
+  .animate-cloud-medium {
+    animation: cloud-move 40s linear infinite;
+  }
+
+  .animate-cloud-fast {
+    animation: cloud-move 25s linear infinite;
+  }
+
+  .animate-sway {
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  .animate-fly-across {
+    animation: fly 20s linear infinite;
+  }
+}
+
+@layer base {
+  :root {
+    /* Agricultural Transformation Palette */
+    --background: 140 30% 98% / 0;
+    --foreground: 140 40% 12%;
+
+    --card: 140 30% 100% / 0.7;
+    --card-foreground: 140 40% 12%;
+
+    --popover: 140 30% 100%;
+    --popover-foreground: 140 40% 12%;
+
+    /* Strong Modern Primary (Emerald/Deep Forest) */
+    --primary: 154 60% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Energetic Harvest Gold */
+    --secondary: 38 95% 48%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Soil Earthy Tone */
+    --muted: 30 25% 94%;
+    --muted-foreground: 30 15% 40%;
+
+    /* Sky Depth */
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 140 20% 88%;
+    --input: 140 20% 90%;
+    --ring: 154 60% 28%;
+
+    --radius: 1rem;
+
+    /* Custom Colors */
+    --agri-green: 154 60% 28%;
+    --agri-gold: 38 95% 48%;
+    --agri-earth: 30 40% 32%;
+
+    /* Advanced Gradients */
+    --gradient-professional: linear-gradient(135deg, hsl(154 60% 28%) 0%, hsl(165 45% 35%) 100%);
+    --gradient-soft: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.8) 100%);
+  }
+
+  .dark {
+    --background: 222 47% 11% / 0;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11% / 0.8;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 154 50% 45%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 38 90% 55%;
+    --secondary-foreground: 222 47% 11%;
+
+    --accent: 199 80% 55%;
+    --accent-foreground: 222 47% 11%;
+
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --border: 217 32% 20%;
+    --input: 217 32% 22%;
+    --ring: 154 50% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Noto Sans', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer components {
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .card-gradient {
+    background: var(--gradient-card);
+  }
+
+  .btn-primary-gradient {
+    background: var(--gradient-primary);
+  }
+
+  .btn-gold-gradient {
+    background: var(--gradient-gold);
+  }
+
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-card {
+    background: var(--card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+    @apply shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-card/90;
+  }
+
+  .farmer-card {
+    @apply rounded-2xl p-6 bg-card backdrop-blur-md border border-primary/10 shadow-lg transition-all duration-300 hover:border-primary/30 hover:scale-[1.02];
+  }
+
+  .touch-target {
+    @apply min-h-[48px] min-w-[48px] flex items-center justify-center rounded-xl transition-transform active:scale-95;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  .animate-grow {
+    animation: grow 3s ease-out forwards;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
