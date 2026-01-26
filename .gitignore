@@ -12,7 +12,8 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor directories and files# lint results
+lint_results*.txt
 .vscode/*
 !.vscode/extensions.json
 .idea
