@@ -3,14 +3,14 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { HeroSection } from '@/components/HeroSection';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import AgriculturalBackground from '@/components/AgriculturalBackground';
+import { BackgroundController } from '@/components/backgrounds';
 import WeatherWidget from '@/components/WeatherWidget';
 import CostCalculator from '@/components/CostCalculator';
 
 const Index: React.FC = () => {
   return (
     <div className="min-h-screen relative isolate">
-      <AgriculturalBackground />
+      <BackgroundController type="living-fields" />
       <LanguageSelector />
       <Navbar />
       <main>

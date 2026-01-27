@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { BackgroundController } from '@/components/backgrounds';
 
 const AnimatedNumber: React.FC<{ value: number; suffix?: string; delay?: number }> = ({
   value,
@@ -114,6 +115,7 @@ const Impact: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <BackgroundController type="flow-map" />
       <Navbar />
 
       <main className="pt-20">

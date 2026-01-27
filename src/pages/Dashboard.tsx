@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData, Product, PurchaseRequest } from '@/contexts/DataContext';
+import { BackgroundController } from '@/components/backgrounds';
 
 const SellerDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -563,6 +564,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <BackgroundController type="seasonal-gradient" />
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-12">
         {user.role === 'seller' ? <SellerDashboard /> : <BuyerDashboard />}
@@ -572,3 +574,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/Navbar';
+import { BackgroundController } from '@/components/backgrounds';
 
 const Register: React.FC = () => {
   const { t } = useTranslation();
@@ -60,6 +61,7 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <BackgroundController type="digital-network" />
       <Navbar />
 
       <div className="container mx-auto px-4 pt-24 pb-12">
@@ -212,8 +214,8 @@ const Register: React.FC = () => {
                         {loading
                           ? t('common.loading')
                           : otpSent
-                          ? t('auth.register')
-                          : t('auth.sendOtp')}
+                            ? t('auth.register')
+                            : t('auth.sendOtp')}
                         <ArrowRight className="ml-2 w-5 h-5" />
                       </Button>
                     </TabsContent>
