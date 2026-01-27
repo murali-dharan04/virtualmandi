@@ -15,11 +15,12 @@ import {
   X,
   Clock,
   Leaf,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -38,14 +39,16 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useData, Product, PurchaseRequest } from '@/contexts/DataContext';
+import { useData, Product } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 const SellerDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { getSellerProducts, getSellerRequests, addProduct, deleteProduct, updateRequestStatus } =
-    useData();
+  const { getSellerProducts, getSellerRequests, addProduct, deleteProduct, updateRequestStatus, isLoading } = useData();
+  const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Form state
   const [cropName, setCropName] = useState('');
@@ -57,23 +60,62 @@ const SellerDashboard: React.FC = () => {
   const products = user ? getSellerProducts(user.id) : [];
   const requests = user ? getSellerRequests(user.id) : [];
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!user || !cropName || !quantity || !price) return;
 
-    addProduct({
-      sellerId: user.id,
-      sellerName: user.name,
-      cropName,
+    setSubmitting(true);
+    const { error } = await addProduct({
+      seller_id: user.id,
+      crop_name: cropName,
       quantity: parseFloat(quantity),
       unit,
-      pricePerUnit: parseFloat(price),
-      location: user.location || { lat: 13.0827, lng: 80.2707, address: location },
+      price_per_unit: parseFloat(price),
+      location_lat: user.location?.lat || 13.0827,
+      location_lng: user.location?.lng || 80.2707,
+      location_address: location || user.location?.address || 'India',
+    });
+    setSubmitting(false);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Product added!',
+      description: `${cropName} has been listed successfully`,
     });
 
     setCropName('');
     setQuantity('');
     setPrice('');
     setIsAddDialogOpen(false);
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    const { error } = await deleteProduct(id);
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleUpdateRequestStatus = async (id: string, status: 'accepted' | 'rejected') => {
+    const { error } = await updateRequestStatus(id, status);
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive',
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -103,6 +145,14 @@ const SellerDashboard: React.FC = () => {
         return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -192,8 +242,19 @@ const SellerDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <Button className="w-full h-12 text-lg" onClick={handleAddProduct}>
-                {t('product.add')}
+              <Button 
+                className="w-full h-12 text-lg" 
+                onClick={handleAddProduct}
+                disabled={submitting || !cropName || !quantity || !price}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  t('product.add')
+                )}
               </Button>
             </div>
           </DialogContent>
@@ -237,23 +298,23 @@ const SellerDashboard: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-heading text-lg font-semibold">{product.cropName}</h3>
+                          <h3 className="font-heading text-lg font-semibold">{product.crop_name}</h3>
                           <p className="text-muted-foreground text-sm">
                             {product.quantity} {t(`product.${product.unit}`)}
                           </p>
                           <p className="text-primary font-bold text-xl mt-2">
-                            ₹{product.pricePerUnit.toLocaleString()}/{product.unit}
+                            ₹{product.price_per_unit.toLocaleString()}/{product.unit}
                           </p>
                           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
                             <MapPin className="w-3 h-3" />
-                            {product.location.address}
+                            {product.location_address}
                           </p>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => deleteProduct(product.id)}
+                          onClick={() => handleDeleteProduct(product.id)}
                         >
                           {t('product.delete')}
                         </Button>
@@ -287,7 +348,7 @@ const SellerDashboard: React.FC = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold">{request.buyerName}</h3>
+                          <h3 className="font-semibold">{request.buyer_name}</h3>
                           <p className="text-sm text-muted-foreground">
                             Requested {request.quantity} units
                           </p>
@@ -297,14 +358,14 @@ const SellerDashboard: React.FC = () => {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              onClick={() => updateRequestStatus(request.id, 'accepted')}
+                              onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}
                             >
                               <Check className="w-4 h-4" />
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateRequestStatus(request.id, 'rejected')}
+                              onClick={() => handleUpdateRequestStatus(request.id, 'rejected')}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -326,33 +387,47 @@ const SellerDashboard: React.FC = () => {
 const BuyerDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { products, getBuyerRequests, sendRequest } = useData();
+  const { products, getBuyerRequests, sendRequest, isLoading } = useData();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCrop, setSelectedCrop] = useState<string>('all');
 
   const requests = user ? getBuyerRequests(user.id) : [];
 
   const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.cropName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCrop = selectedCrop === 'all' || p.cropName === selectedCrop;
+    const matchesSearch = p.crop_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCrop = selectedCrop === 'all' || p.crop_name === selectedCrop;
     return matchesSearch && matchesCrop;
   });
 
-  const uniqueCrops = Array.from(new Set(products.map((p) => p.cropName)));
+  const uniqueCrops = Array.from(new Set(products.map((p) => p.crop_name)));
 
-  const handleSendRequest = (product: Product) => {
+  const handleSendRequest = async (product: Product) => {
     if (!user) return;
-    sendRequest({
-      productId: product.id,
-      buyerId: user.id,
-      buyerName: user.name,
-      sellerId: product.sellerId,
+    
+    const { error } = await sendRequest({
+      product_id: product.id,
+      seller_id: product.seller_id,
       quantity: product.quantity,
+    });
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Request sent!',
+      description: `Your purchase request has been sent to ${product.seller_name}`,
     });
   };
 
   const hasRequestedProduct = (productId: string) => {
-    return requests.some((r) => r.productId === productId);
+    return requests.some((r) => r.product_id === productId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -382,6 +457,14 @@ const BuyerDashboard: React.FC = () => {
         return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -448,8 +531,8 @@ const BuyerDashboard: React.FC = () => {
                     <div className="flex flex-col h-full">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="font-heading text-lg font-semibold">{product.cropName}</h3>
-                          <p className="text-sm text-muted-foreground">by {product.sellerName}</p>
+                          <h3 className="font-heading text-lg font-semibold">{product.crop_name}</h3>
+                          <p className="text-sm text-muted-foreground">by {product.seller_name}</p>
                         </div>
                         <Badge variant="secondary" className="ml-2">
                           {product.quantity} {product.unit}
@@ -457,7 +540,7 @@ const BuyerDashboard: React.FC = () => {
                       </div>
 
                       <p className="text-primary font-bold text-2xl mb-3">
-                        ₹{product.pricePerUnit.toLocaleString()}
+                        ₹{product.price_per_unit.toLocaleString()}
                         <span className="text-sm font-normal text-muted-foreground">
                           /{product.unit}
                         </span>
@@ -465,7 +548,7 @@ const BuyerDashboard: React.FC = () => {
 
                       <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4">
                         <MapPin className="w-3 h-3" />
-                        {product.location.address}
+                        {product.location_address}
                       </p>
 
                       <div className="mt-auto">
@@ -515,7 +598,7 @@ const BuyerDashboard: React.FC = () => {
           ) : (
             <div className="grid gap-4">
               {requests.map((request) => {
-                const product = products.find((p) => p.id === request.productId);
+                const product = products.find((p) => p.id === request.product_id);
                 return (
                   <motion.div
                     key={request.id}
@@ -526,9 +609,9 @@ const BuyerDashboard: React.FC = () => {
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-semibold">{product?.cropName || 'Product'}</h3>
+                            <h3 className="font-semibold">{product?.crop_name || 'Product'}</h3>
                             <p className="text-sm text-muted-foreground">
-                              From {product?.sellerName}
+                              From {product?.seller_name}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               Quantity: {request.quantity}
@@ -550,14 +633,22 @@ const BuyerDashboard: React.FC = () => {
 };
 
 const Dashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) return null;
 

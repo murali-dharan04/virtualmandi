@@ -23,7 +23,7 @@ const languages = [
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -32,8 +32,8 @@ export const Navbar: React.FC = () => {
     i18n.changeLanguage(langCode);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
