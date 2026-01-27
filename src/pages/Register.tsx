@@ -2,30 +2,29 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { Phone, Mail, Lock, Eye, EyeOff, Tractor, ShoppingCart, ArrowRight, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Tractor, ShoppingCart, ArrowRight, User, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/Navbar';
+import { useToast } from '@/hooks/use-toast';
 
 const Register: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signUp, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   const [step, setStep] = useState<'role' | 'details'>('role');
   const [role, setRole] = useState<UserRole>(null);
-  const [authMethod, setAuthMethod] = useState<'mobile' | 'email'>('mobile');
   const [name, setName] = useState('');
-  const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleRoleSelect = (selectedRole: UserRole) => {
@@ -33,29 +32,60 @@ const Register: React.FC = () => {
     setStep('details');
   };
 
-  const handleSendOtp = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setOtpSent(true);
-      setLoading(false);
-    }, 1000);
-  };
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleRegister = () => {
+    if (!name || !email || !password) {
+      toast({
+        title: 'Missing fields',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Password mismatch',
+        description: 'Passwords do not match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      const newUser = {
-        id: 'user_' + Date.now(),
-        name: name || 'User',
-        mobile: mobile || undefined,
-        email: email || undefined,
-        role: role,
-        location: { lat: 13.0827, lng: 80.2707, address: 'Chennai, Tamil Nadu' },
-      };
-      login(newUser);
-      navigate('/dashboard');
-      setLoading(false);
-    }, 1500);
+
+    // Default location (can be updated later)
+    const location = locationAddress
+      ? { lat: 13.0827, lng: 80.2707, address: locationAddress }
+      : undefined;
+
+    const { error } = await signUp(email, password, name, role, location);
+    setLoading(false);
+
+    if (error) {
+      toast({
+        title: 'Registration failed',
+        description: error,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Account created!',
+      description: 'Welcome to Virtual Mandi',
+    });
+    navigate('/dashboard');
   };
 
   return (
@@ -121,18 +151,17 @@ const Register: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-4"
                 >
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setStep('role')}
-                    className="mb-2"
+                    className="mb-4"
                   >
                     ← Back
                   </Button>
 
-                  <div className="flex items-center gap-3 p-3 bg-muted rounded-lg mb-4">
+                  <div className="flex items-center gap-3 p-3 bg-muted rounded-lg mb-6">
                     {role === 'seller' ? (
                       <Tractor className="w-6 h-6 text-primary" />
                     ) : (
@@ -143,133 +172,116 @@ const Register: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Your name"
-                        className="pl-10 h-12 touch-target"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name *</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Your name"
+                          className="pl-10 h-12 touch-target"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <Tabs
-                    defaultValue="mobile"
-                    onValueChange={(v) => setAuthMethod(v as 'mobile' | 'email')}
-                  >
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="mobile" className="touch-target">
-                        <Phone className="w-4 h-4 mr-2" />
-                        {t('auth.mobile')}
-                      </TabsTrigger>
-                      <TabsTrigger value="email" className="touch-target">
-                        <Mail className="w-4 h-4 mr-2" />
-                        {t('auth.email')}
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="mobile" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="mobile">{t('auth.mobile')}</Label>
-                        <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                          <Input
-                            id="mobile"
-                            type="tel"
-                            placeholder="+91 XXXXX XXXXX"
-                            className="pl-10 h-12 touch-target"
-                            value={mobile}
-                            onChange={(e) => setMobile(e.target.value)}
-                          />
-                        </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">{t('auth.email')} *</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="you@example.com"
+                          className="pl-10 h-12 touch-target"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={loading}
+                        />
                       </div>
+                    </div>
 
-                      {otpSent && (
-                        <div className="space-y-2">
-                          <Label htmlFor="otp">{t('auth.otp')}</Label>
-                          <Input
-                            id="otp"
-                            type="text"
-                            placeholder="XXXXXX"
-                            className="h-12 text-center text-2xl tracking-widest touch-target"
-                            maxLength={6}
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                          />
-                        </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">{t('auth.password')} *</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          className="pl-10 pr-10 h-12 touch-target"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={loading}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-5 h-5" />
+                          ) : (
+                            <Eye className="w-5 h-5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="confirmPassword"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          className="pl-10 h-12 touch-target"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Location (Optional)</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="location"
+                          type="text"
+                          placeholder="Your city or village"
+                          className="pl-10 h-12 touch-target"
+                          value={locationAddress}
+                          onChange={(e) => setLocationAddress(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full h-12 text-lg touch-target"
+                      disabled={loading || authLoading || !email || !password || !name}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          {t('common.loading')}
+                        </>
+                      ) : (
+                        <>
+                          {t('auth.register')}
+                          <ArrowRight className="ml-2 w-5 h-5" />
+                        </>
                       )}
-
-                      <Button
-                        className="w-full h-12 text-lg touch-target"
-                        disabled={loading || !mobile || !name}
-                        onClick={otpSent ? handleRegister : handleSendOtp}
-                      >
-                        {loading
-                          ? t('common.loading')
-                          : otpSent
-                          ? t('auth.register')
-                          : t('auth.sendOtp')}
-                        <ArrowRight className="ml-2 w-5 h-5" />
-                      </Button>
-                    </TabsContent>
-
-                    <TabsContent value="email" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">{t('auth.email')}</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="you@example.com"
-                            className="pl-10 h-12 touch-target"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="password">{t('auth.password')}</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                          <Input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="••••••••"
-                            className="pl-10 pr-10 h-12 touch-target"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                          />
-                          <button
-                            type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-5 h-5" />
-                            ) : (
-                              <Eye className="w-5 h-5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      <Button
-                        className="w-full h-12 text-lg touch-target"
-                        disabled={loading || !email || !password || !name}
-                        onClick={handleRegister}
-                      >
-                        {loading ? t('common.loading') : t('auth.register')}
-                        <ArrowRight className="ml-2 w-5 h-5" />
-                      </Button>
-                    </TabsContent>
-                  </Tabs>
+                    </Button>
+                  </form>
                 </motion.div>
               )}
 
