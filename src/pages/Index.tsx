@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { HeroSection } from '@/components/HeroSection';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const Index: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const Index: React.FC = () => {
         <HeroSection />
       </main>
       <Footer />
+      <PageAudioGuide pageKey="home" />
     </div>
   );
 };

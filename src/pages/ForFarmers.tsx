@@ -6,6 +6,7 @@ import { Tractor, TrendingUp, Ban, Smartphone, Check, ArrowRight } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const ForFarmers: React.FC = () => {
   const { t } = useTranslation();
@@ -171,6 +172,7 @@ const ForFarmers: React.FC = () => {
       </main>
 
       <Footer />
+      <PageAudioGuide pageKey="forFarmers" />
     </div>
   );
 };

@@ -16,6 +16,8 @@ import {
   Clock,
   Leaf,
   Loader2,
+  BarChart3,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +43,9 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData, Product } from '@/contexts/DataContext';
 import { useToast } from '@/hooks/use-toast';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
+import { SellerAnalytics } from '@/components/dashboard/SellerAnalytics';
+import { MarketIntelligence } from '@/components/dashboard/MarketIntelligence';
 
 const SellerDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -261,8 +266,12 @@ const SellerDashboard: React.FC = () => {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="listings">
-        <TabsList className="w-full grid grid-cols-2">
+      <Tabs defaultValue="analytics">
+        <TabsList className="w-full grid grid-cols-4">
+          <TabsTrigger value="analytics" className="touch-target">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            {t('analytics.title', 'Analytics')}
+          </TabsTrigger>
           <TabsTrigger value="listings" className="touch-target">
             <Package className="w-4 h-4 mr-2" />
             {t('dashboard.myListings')} ({products.length})
@@ -271,7 +280,21 @@ const SellerDashboard: React.FC = () => {
             <MessageSquare className="w-4 h-4 mr-2" />
             {t('dashboard.requests')} ({requests.filter((r) => r.status === 'pending').length})
           </TabsTrigger>
+          <TabsTrigger value="market" className="touch-target">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            {t('market.title', 'Market')}
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="analytics" className="mt-6">
+          <SellerAnalytics
+            totalRevenue={products.reduce((sum, p) => sum + (p.price_per_unit * p.quantity), 0)}
+            productionCost={products.reduce((sum, p) => sum + (p.price_per_unit * p.quantity * 0.6), 0)}
+            totalOrders={requests.length}
+            pendingOrders={requests.filter(r => r.status === 'pending').length}
+            acceptedOrders={requests.filter(r => r.status === 'accepted').length}
+          />
+        </TabsContent>
 
         <TabsContent value="listings" className="mt-6">
           {products.length === 0 ? (
@@ -379,7 +402,15 @@ const SellerDashboard: React.FC = () => {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="market" className="mt-6">
+          <MarketIntelligence 
+            prices={[]}
+            userLocation={user?.location?.address || 'India'}
+          />
+        </TabsContent>
       </Tabs>
+      <PageAudioGuide pageKey="sellerDashboard" />
     </div>
   );
 };
@@ -628,6 +659,7 @@ const BuyerDashboard: React.FC = () => {
           )}
         </TabsContent>
       </Tabs>
+      <PageAudioGuide pageKey="buyerDashboard" />
     </div>
   );
 };

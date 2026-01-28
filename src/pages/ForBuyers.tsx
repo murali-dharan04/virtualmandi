@@ -6,6 +6,7 @@ import { ShoppingCart, Leaf, Shield, MapPin, Check, ArrowRight } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const ForBuyers: React.FC = () => {
   const { t } = useTranslation();
@@ -171,6 +172,7 @@ const ForBuyers: React.FC = () => {
       </main>
 
       <Footer />
+      <PageAudioGuide pageKey="forBuyers" />
     </div>
   );
 };

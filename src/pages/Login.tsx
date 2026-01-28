@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
@@ -144,6 +145,7 @@ const Login: React.FC = () => {
           </Card>
         </motion.div>
       </div>
+      <PageAudioGuide pageKey="login" />
     </div>
   );
 };
