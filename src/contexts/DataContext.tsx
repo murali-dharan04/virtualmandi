@@ -74,23 +74,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const { data, error } = await supabase
+      // Fetch products first
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select(`
-          *,
-          profiles:seller_id (name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching products:', error);
+      if (productsError) {
+        console.error('Error fetching products:', productsError);
         return;
       }
 
-      const formattedProducts: Product[] = (data || []).map((p: any) => ({
+      // Get unique seller IDs
+      const sellerIds = [...new Set((productsData || []).map(p => p.seller_id))];
+      
+      // Fetch seller profiles
+      let sellerNames: Record<string, string> = {};
+      if (sellerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, name')
+          .in('user_id', sellerIds);
+        
+        if (profilesData) {
+          sellerNames = profilesData.reduce((acc, p) => {
+            acc[p.user_id] = p.name;
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
+      const formattedProducts: Product[] = (productsData || []).map((p: any) => ({
         id: p.id,
         seller_id: p.seller_id,
-        seller_name: p.profiles?.name || 'Unknown Seller',
+        seller_name: sellerNames[p.seller_id] || 'Unknown Seller',
         crop_name: p.crop_name,
         quantity: Number(p.quantity),
         unit: p.unit as 'kg' | 'quintal' | 'ton',
@@ -114,25 +131,44 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const { data, error } = await supabase
+      // Fetch requests with products
+      const { data: requestsData, error: requestsError } = await supabase
         .from('purchase_requests')
         .select(`
           *,
-          buyer_profile:buyer_id (name),
           products (*)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching requests:', error);
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
         return;
       }
 
-      const formattedRequests: PurchaseRequest[] = (data || []).map((r: any) => ({
+      // Get unique buyer IDs
+      const buyerIds = [...new Set((requestsData || []).map(r => r.buyer_id))];
+      
+      // Fetch buyer profiles
+      let buyerNames: Record<string, string> = {};
+      if (buyerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, name')
+          .in('user_id', buyerIds);
+        
+        if (profilesData) {
+          buyerNames = profilesData.reduce((acc, p) => {
+            acc[p.user_id] = p.name;
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
+      const formattedRequests: PurchaseRequest[] = (requestsData || []).map((r: any) => ({
         id: r.id,
         product_id: r.product_id,
         buyer_id: r.buyer_id,
-        buyer_name: r.buyer_profile?.name || 'Unknown Buyer',
+        buyer_name: buyerNames[r.buyer_id] || 'Unknown Buyer',
         seller_id: r.seller_id,
         quantity: Number(r.quantity),
         status: r.status as 'pending' | 'accepted' | 'rejected',

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const Register: React.FC = () => {
   const { t } = useTranslation();
@@ -297,6 +298,7 @@ const Register: React.FC = () => {
           </Card>
         </motion.div>
       </div>
+      <PageAudioGuide pageKey="register" />
     </div>
   );
 };

@@ -92,6 +92,37 @@ export const translations = {
         accepted: "Accepted",
         rejected: "Rejected",
       },
+      // Analytics
+      analytics: {
+        title: "Profit & Loss Dashboard",
+        totalRevenue: "Total Revenue",
+        productionCost: "Production Cost",
+        netProfit: "Net Profit/Loss",
+        profitMargin: "Profit Margin",
+        inProfit: "You are in Profit! 🎉",
+        inLoss: "You are in Loss",
+        profitDesc: "Keep up the great work!",
+        lossDesc: "Consider adjusting your prices or reducing costs",
+        profitProgress: "Profit Margin",
+        totalOrders: "Total Orders",
+        pending: "Pending",
+        accepted: "Accepted",
+      },
+      // Market Intelligence
+      market: {
+        title: "Market Intelligence",
+        yourPrice: "Your Price",
+        marketAvg: "Market Avg",
+        mandiPrice: "Mandi Price",
+        highDemand: "High Demand",
+        mediumDemand: "Medium",
+        lowDemand: "Low",
+        aboveMarket: "Above market",
+        belowMarket: "Below market",
+        atMarket: "At market rate",
+        smartTip: "Smart Selling Tip",
+        tipContent: "Tomato and Rice prices are rising. Consider selling now for better returns.",
+      },
       // Common
       common: {
         search: "Search",

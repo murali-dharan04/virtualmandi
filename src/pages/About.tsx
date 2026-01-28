@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Target, Eye, Users, Shield, Globe, Heart } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { PageAudioGuide } from '@/components/PageAudioGuide';
 
 const About: React.FC = () => {
   const { t } = useTranslation();
@@ -127,6 +128,7 @@ const About: React.FC = () => {
       </main>
 
       <Footer />
+      <PageAudioGuide pageKey="about" />
     </div>
   );
 };
